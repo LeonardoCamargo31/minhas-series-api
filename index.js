@@ -8,13 +8,39 @@ const mongo = process.env.MONGODB || 'mongodb://localhost/minhas-series-api'
 //para o mongose usar as promise padrão do node
 mongoose.Promise = global.Promise
 
-app.use(bodyParser({ extended: true }))
+app.use(bodyParser.json({ extended: true }))
 
+const User = require('./models/user')
 const seriesRouter = require('./routes/series')
+const authRouter = require('./routes/auth')
+const usersRouter = require('./routes/users')
+
+app.use('/auth', authRouter)
 app.use('/series', seriesRouter)
+app.use('/users', usersRouter)
+
+const createInitialUsers = async()=>{
+    const total = await User.count({})
+    if(total===0){
+        const user = new User({
+            username:'leonardo',
+            password:'123',
+            roles: ['restrito','admin']
+        })
+        await user.save()
+
+        const user2 = new User({
+            username:'restrito',
+            password:'123',
+            roles: ['restrito']
+        })
+        await user2.save()
+    }
+}
 
 mongoose.connect(mongo, { useNewUrlParser: true }).then(() => {
     app.listen(port, () => {
+        createInitialUsers()
         console.log(`Servidor rodando na porta ${port}`)
     })
 }).catch((e) => {
