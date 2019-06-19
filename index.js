@@ -3,12 +3,27 @@ const app = express()
 const port = process.env.PORT || 3000
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
+const cors =require('cors')
 
 const mongo = process.env.MONGODB || 'mongodb://localhost/minhas-series-api'
 //para o mongose usar as promise padrão do node
 mongoose.Promise = global.Promise
 
 app.use(bodyParser.json({ extended: true }))
+
+//app.use(cors())//para todas as origens
+//app.use(cors({origin:'http://127.0.0.1:8080'}))//limitando para uma origem
+
+//nesse caso poderiamos ter varios clientes
+app.use(cors({
+    origin:(origin,callback)=>{
+        if(origin==='http://127.0.0.1:8080'){
+            callback(null,true)
+        }else{
+            callback(new Error('Not allowed by CORS'))
+        }
+    }
+}))
 
 const User = require('./models/user')
 const seriesRouter = require('./routes/series')
@@ -18,6 +33,7 @@ const usersRouter = require('./routes/users')
 app.use('/auth', authRouter)
 app.use('/series', seriesRouter)
 app.use('/users', usersRouter)
+
 
 const createInitialUsers = async()=>{
     const total = await User.count({})
