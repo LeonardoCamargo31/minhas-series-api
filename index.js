@@ -5,6 +5,11 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const cors =require('cors')
 
+const swaggerUi = require('swagger-ui-express')
+const yaml = require('yamljs')
+const swaggerDoc = yaml.load('./swagger.yaml')
+app.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerDoc))
+
 const mongo = process.env.MONGODB || 'mongodb+srv://admin:xYHGwvPnAExBZEMy@cluster0-npzcv.mongodb.net/test?retryWrites=true&w=majority'
 //para o mongose usar as promise padrão do node
 mongoose.Promise = global.Promise
